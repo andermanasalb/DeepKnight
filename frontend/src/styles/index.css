@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: #1a1a2e;
+    --color-surface: #16213e;
+    --color-border: #0f3460;
+    --color-accent: #0ea5e9;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-surface text-white font-sans;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+  }
+
+  * {
+    @apply border-surface-border;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-surface;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-600;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface-card rounded-xl border border-surface-border shadow-card;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-card-hover hover:border-brand-700;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700;
+  }
+
+  .btn-secondary {
+    @apply btn bg-surface-border text-white hover:bg-surface-hover;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-slate-300 hover:bg-surface-hover hover:text-white;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-green {
+    @apply badge bg-emerald-900/50 text-emerald-400 border border-emerald-800;
+  }
+
+  .badge-blue {
+    @apply badge bg-brand-900/50 text-brand-400 border border-brand-800;
+  }
+
+  .badge-yellow {
+    @apply badge bg-yellow-900/50 text-yellow-400 border border-yellow-800;
+  }
+
+  .badge-red {
+    @apply badge bg-red-900/50 text-red-400 border border-red-800;
+  }
+
+  .score-bar {
+    @apply h-2 rounded-full overflow-hidden bg-surface-border;
+  }
+
+  .text-muted {
+    @apply text-slate-400;
+  }
+
+  .text-subtle {
+    @apply text-slate-500;
+  }
+
+  /* Chess board container */
+  .chess-board-container {
+    @apply relative rounded-xl overflow-hidden shadow-2xl;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
+  /* Coach message bubbles */
+  .coach-message {
+    @apply rounded-lg p-3 text-sm leading-relaxed;
+  }
+
+  .coach-message-ai {
+    @apply coach-message bg-brand-900/30 border border-brand-800/50 text-slate-200;
+  }
+
+  .coach-message-user {
+    @apply coach-message bg-surface-border text-slate-300 ml-4;
+  }
+
+  /* Move history notation */
+  .move-notation {
+    @apply font-mono text-sm text-slate-300 hover:text-white transition-colors cursor-pointer;
+  }
+
+  .move-notation-current {
+    @apply font-mono text-sm font-medium text-brand-400 bg-brand-900/30 rounded px-1;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(22, 33, 62, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .animate-thinking {
+    animation: thinking 1.5s ease-in-out infinite;
+  }
+}

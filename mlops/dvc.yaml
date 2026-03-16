@@ -1,0 +1,61 @@
+stages:
+  generate_data:
+    cmd: python -m app.ml.training.dummy_data
+    deps:
+      - backend/app/ml/training/dummy_data.py
+      - backend/app/engine/evaluation.py
+      - backend/app/engine/encoding.py
+    outs:
+      - data/processed/train/X.npy
+      - data/processed/train/y.npy
+      - data/processed/val/X.npy
+      - data/processed/val/y.npy
+    params:
+      - mlops/params.yaml:
+          - data.n_positions
+          - data.train_ratio
+          - data.random_seed
+
+  train:
+    cmd: >
+      cd backend &&
+      python -m app.ml.training.train
+        --epochs ${train.epochs}
+        --batch-size ${train.batch_size}
+        --lr ${train.learning_rate}
+        --dropout ${train.dropout_rate}
+    deps:
+      - backend/app/ml/training/train.py
+      - backend/app/ml/models/value_net.py
+      - backend/app/ml/training/dataset.py
+      - data/processed/train/X.npy
+      - data/processed/train/y.npy
+      - data/processed/val/X.npy
+      - data/processed/val/y.npy
+    outs:
+      - data/models/value_net.pt
+      - data/models/value_net_best.pt
+    params:
+      - mlops/params.yaml:
+          - train.epochs
+          - train.batch_size
+          - train.learning_rate
+          - train.dropout_rate
+          - train.patience
+    metrics:
+      - data/models/metrics.json:
+          cache: false
+
+  evaluate:
+    cmd: >
+      cd backend &&
+      python -m app.ml.training.evaluate
+        --checkpoint data/models/value_net_best.pt
+    deps:
+      - backend/app/ml/training/evaluate.py
+      - data/models/value_net_best.pt
+      - data/processed/val/X.npy
+      - data/processed/val/y.npy
+    metrics:
+      - data/models/eval_metrics.json:
+          cache: false

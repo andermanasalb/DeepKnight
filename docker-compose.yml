@@ -1,0 +1,97 @@
+version: "3.9"
+
+services:
+  # ─────────────────────────────────────────────
+  # PostgreSQL Database
+  # ─────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chess
+      POSTGRES_PASSWORD: chess_password
+      POSTGRES_DB: chess_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chess -d chess_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # FastAPI Backend
+  # ─────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://chess:chess_password@db:5432/chess_ai
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.0-flash}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-change-in-prod}
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+      - ENVIRONMENT=development
+      - MODEL_CHECKPOINT_PATH=/app/data/models/value_net.pt
+      - MLFLOW_TRACKING_URI=/app/mlruns
+      - DEVICE=cpu
+    volumes:
+      - ./data:/app/data
+      - ./backend/app:/app/app
+      - mlruns_data:/app/mlruns
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─────────────────────────────────────────────
+  # React Frontend (dev mode)
+  # ─────────────────────────────────────────────
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_APP_TITLE=DeepKnight
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  # ─────────────────────────────────────────────
+  # MLflow Tracking Server
+  # ─────────────────────────────────────────────
+  mlflow:
+    image: python:3.11-slim
+    working_dir: /mlflow
+    command: >
+      sh -c "pip install mlflow --quiet &&
+             mlflow server
+               --host 0.0.0.0
+               --port 5000
+               --backend-store-uri /mlflow/mlruns
+               --default-artifact-root /mlflow/mlartifacts"
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlruns_data:/mlflow/mlruns
+      - mlartifacts_data:/mlflow/mlartifacts
+
+volumes:
+  postgres_data:
+  mlruns_data:
+  mlartifacts_data:

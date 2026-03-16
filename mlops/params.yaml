@@ -1,0 +1,21 @@
+# DVC pipeline parameters
+# Change these values and run `dvc repro` to trigger the affected stages
+
+data:
+  n_positions: 50000
+  train_ratio: 0.85
+  random_seed: 42
+
+train:
+  epochs: 30
+  batch_size: 512
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  dropout_rate: 0.3
+  patience: 7
+  hidden_dims: [256, 128, 64]
+  device: cpu
+
+model:
+  input_dim: 768
+  architecture: mlp
