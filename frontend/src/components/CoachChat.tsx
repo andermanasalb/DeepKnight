@@ -1,15 +1,9 @@
-/**
- * CoachChat — generative AI coaching interface.
- *
- * Chat panel with preset coaching actions and free-form messaging.
- */
-
 import { useEffect, useRef, useState } from "react";
-import { MessageSquare, Send, Lightbulb, Search, BarChart2, Loader2 } from "lucide-react";
+import { Send, Lightbulb, Search, BarChart2, Loader2, Cpu } from "lucide-react";
 import clsx from "clsx";
-import type { UseCoachReturn } from "../hooks/useCoach";
-import type { CoachMessage } from "../hooks/useCoach";
+import type { UseCoachReturn, CoachMessage } from "../hooks/useCoach";
 import type { GameState } from "../types/chess";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface CoachChatProps {
   coachHook: UseCoachReturn;
@@ -24,7 +18,6 @@ export default function CoachChat({ coachHook, gameState, moveHistoryUci }: Coac
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages.length]);
@@ -60,74 +53,77 @@ export default function CoachChat({ coachHook, gameState, moveHistoryUci }: Coac
   };
 
   return (
-    <div className="card flex flex-col h-full min-h-[400px]">
-      {/* Header */}
-      <div className="flex items-center gap-2 p-4 border-b border-surface-border">
-        <MessageSquare size={16} className="text-brand-400" />
-        <h2 className="text-sm font-semibold text-white">Coach</h2>
-        <span className="ml-auto text-xs badge-blue">Gemini</span>
+    <div className="flex flex-col h-full min-h-0 bg-transparent">
+      {/* Header Info */}
+      <div className="flex items-center justify-between mb-4 px-1">
+        <div className="flex items-center gap-2">
+          <Cpu size={16} className="text-neon-cyan" />
+          <h2 className="font-tech text-xs tracking-[0.2em] text-neon-cyan uppercase">AI Strategic Core</h2>
+        </div>
+        <div className="text-[10px] font-tech text-neon-cyan/40 tracking-wider">SECURE CONNECTION // 0xCC1</div>
       </div>
 
       {/* Quick actions */}
-      <div className="flex gap-1.5 p-3 border-b border-surface-border flex-wrap">
+      <div className="grid grid-cols-3 gap-2 mb-4">
         <QuickActionButton
-          icon={<Lightbulb size={13} />}
-          label="Hint"
+          icon={<Lightbulb size={12} />}
+          label="HINT"
           onClick={handleHint}
           disabled={isLoading || gameState.isGameOver || gameState.isThinking}
-          title="Get a strategic hint"
         />
         <QuickActionButton
-          icon={<Search size={13} />}
-          label="Explain Move"
+          icon={<Search size={12} />}
+          label="WHY?"
           onClick={handleExplain}
           disabled={isLoading || !gameState.lastAiMove}
-          title="Explain the AI's last move"
         />
         <QuickActionButton
-          icon={<BarChart2 size={13} />}
-          label="Analyze Game"
+          icon={<BarChart2 size={12} />}
+          label="REPORT"
           onClick={handlePostGame}
           disabled={isLoading || !gameState.isGameOver}
-          title="Post-game analysis (only after game ends)"
         />
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-4 mb-4 pr-1 scrollbar-thin scrollbar-thumb-neon-cyan/20 scrollbar-track-transparent">
+        <AnimatePresence initial={false}>
+          {messages.map((message) => (
+            <MessagePacket key={message.id} message={message} />
+          ))}
+        </AnimatePresence>
 
         {isLoading && (
-          <div className="flex items-center gap-2 text-xs text-muted">
-            <Loader2 size={14} className="animate-spin text-brand-400" />
-            <span className="animate-thinking">Thinking...</span>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center gap-3 px-3 py-2 text-neon-cyan/60"
+          >
+            <Loader2 size={14} className="animate-spin" />
+            <span className="font-tech text-[10px] tracking-widest uppercase animate-pulse">Processing Neural Net...</span>
+          </motion.div>
         )}
 
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <form
-        onSubmit={handleSend}
-        className="p-3 border-t border-surface-border"
-      >
-        <div className="flex gap-2">
+      <form onSubmit={handleSend} className="relative group">
+        <div className="absolute -inset-0.5 bg-neon-cyan/20 blur opacity-0 group-focus-within:opacity-100 transition-opacity rounded-lg" />
+        <div className="relative flex gap-2">
           <input
             ref={inputRef}
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask anything about the game..."
+            placeholder="COMMUNICATE WITH CORE..."
             disabled={isLoading}
-            className="flex-1 bg-surface text-white text-sm rounded-lg px-3 py-2 border border-surface-border focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600 placeholder:text-slate-500 disabled:opacity-50"
+            className="flex-1 bg-surface-card/80 backdrop-blur-md text-white text-[11px] font-tech tracking-wider rounded border border-neon-cyan/20 px-3 py-2.5 focus:border-neon-cyan/60 focus:outline-none placeholder:text-white/20 uppercase"
           />
           <button
             type="submit"
             disabled={isLoading || !inputValue.trim()}
-            className="btn-primary p-2 disabled:opacity-40"
+            className="flex items-center justify-center w-10 h-10 bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan rounded hover:bg-neon-cyan/20 disabled:opacity-20 transition-all shadow-neon"
           >
             <Send size={15} />
           </button>
@@ -137,91 +133,79 @@ export default function CoachChat({ coachHook, gameState, moveHistoryUci }: Coac
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────
-
 function QuickActionButton({
   icon,
   label,
   onClick,
   disabled,
-  title,
 }: {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
   disabled?: boolean;
-  title?: string;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      title={title}
-      className={clsx(
-        "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-150",
-        "bg-surface-border text-slate-300 border border-surface-border",
-        "hover:bg-brand-900/40 hover:text-brand-300 hover:border-brand-700",
-        "disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-border disabled:hover:text-slate-300"
-      )}
+      className="flex flex-col items-center justify-center gap-1.5 p-2 glass-panel border-neon-cyan/20 hover:border-neon-cyan/60 text-neon-cyan/60 hover:text-neon-cyan disabled:opacity-20 transition-all active:scale-95 group"
     >
-      {icon}
-      {label}
+      <div className="group-hover:shadow-neon transition-shadow">{icon}</div>
+      <span className="font-tech text-[9px] tracking-widest uppercase">{label}</span>
     </button>
   );
 }
 
-function MessageBubble({ message }: { message: CoachMessage }) {
+function MessagePacket({ message }: { message: CoachMessage }) {
   const isCoach = message.role === "coach";
   const isSystem = message.role === "system";
 
-  if (isSystem) {
-    return (
-      <div className="text-xs text-red-400 bg-red-900/20 rounded-lg px-3 py-2 border border-red-800/50">
-        {message.content}
-      </div>
-    );
-  }
-
   return (
-    <div
+    <motion.div
+      initial={{ x: isCoach ? -10 : 10, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
       className={clsx(
-        "animate-fade-in",
-        isCoach ? "mr-4" : "ml-4"
+        "flex flex-col",
+        isCoach ? "items-start" : "items-end"
       )}
     >
-      <div className={clsx(isCoach ? "coach-message-ai" : "coach-message-user")}>
-        {isCoach && (
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="text-xs font-semibold text-brand-400">Coach</span>
-            {message.type && (
-              <span className="text-xs text-muted">· {messageTypeLabel(message.type)}</span>
-            )}
+      <div className={clsx(
+        "max-w-[90%] p-3 relative overflow-hidden",
+        isSystem ? "bg-neon-red/10 border-l-2 border-neon-red text-neon-red" : 
+        isCoach ? "bg-neon-cyan/5 border-l-2 border-neon-cyan text-slate-200" :
+        "bg-white/5 border-r-2 border-white/40 text-slate-300"
+      )}>
+        {/* Subtle background decoration */}
+        <div className="absolute top-0 right-0 w-8 h-8 opacity-[0.03] pointer-events-none">
+          <Cpu size={32} />
+        </div>
+        
+        <div className="flex items-center justify-between mb-1.5">
+          <span className={clsx(
+            "font-tech text-[9px] tracking-[0.2em] font-bold uppercase",
+            isSystem ? "text-neon-red" : isCoach ? "text-neon-cyan" : "text-white/60"
+          )}>
+            {isSystem ? "SYSTEM_CRITICAL" : isCoach ? "STRATEGIST" : "COMMANDER"}
+          </span>
+          <span className="text-[8px] font-mono opacity-30">
+            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </div>
+        
+        <p className="text-xs leading-relaxed tracking-wide font-sans line-clamp-none">
+          {message.content}
+        </p>
+
+        {isCoach && message.type && (
+          <div className="mt-2 pt-2 border-t border-neon-cyan/10 flex items-center gap-2">
+            <div className="w-1 h-1 bg-neon-cyan rounded-full animate-pulse" />
+            <span className="text-[8px] font-tech text-neon-cyan/40 uppercase tracking-[0.3em]">
+              {message.type} data stream
+            </span>
           </div>
         )}
-        <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
       </div>
-      <div
-        className={clsx(
-          "text-xs text-muted mt-1",
-          isCoach ? "text-left" : "text-right"
-        )}
-      >
-        {formatTime(message.timestamp)}
-      </div>
-    </div>
+    </motion.div>
   );
 }
 
-function messageTypeLabel(type: CoachMessage["type"]): string {
-  switch (type) {
-    case "hint": return "Hint";
-    case "explain": return "Move explanation";
-    case "postgame": return "Game analysis";
-    case "chat": return "";
-    default: return "";
-  }
-}
-
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}

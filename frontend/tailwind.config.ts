@@ -6,7 +6,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Chess AI custom palette
+        // Sci-Fi Dashboard Palette
         brand: {
           50: "#f0f9ff",
           100: "#e0f2fe",
@@ -19,29 +19,38 @@ export default {
           800: "#075985",
           900: "#0c4a6e",
         },
+        neon: {
+          cyan: "#00e5ff",
+          blue: "#00b2ff",
+          pink: "#ff00e5",
+          red: "#ff3d3d",
+        },
         chess: {
-          light: "#f0d9b5",
-          dark: "#b58863",
-          highlight: "#cdd16a",
-          "last-move": "#cdd16a",
-          check: "#e74c3c",
+          light: "rgba(255, 255, 255, 0.05)",
+          dark: "rgba(0, 0, 0, 0.2)",
+          highlight: "rgba(0, 229, 255, 0.3)",
+          "last-move": "rgba(0, 229, 255, 0.2)",
+          check: "rgba(255, 61, 61, 0.4)",
         },
         surface: {
-          DEFAULT: "#1a1a2e",
-          card: "#16213e",
-          border: "#0f3460",
-          hover: "#1f3156",
+          DEFAULT: "#020617",
+          card: "rgba(15, 23, 42, 0.6)",
+          border: "rgba(0, 229, 255, 0.1)",
+          hover: "rgba(0, 229, 255, 0.05)",
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["Rajdhani", "Inter", "system-ui", "sans-serif"],
+        tech: ["Orbitron", "sans-serif"],
         mono: ["JetBrains Mono", "Fira Code", "monospace"],
       },
       animation: {
-        "fade-in": "fadeIn 0.3s ease-in-out",
-        "slide-up": "slideUp 0.3s ease-out",
-        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "fade-in": "fadeIn 0.5s ease-out",
+        "slide-up": "slideUp 0.5s ease-out",
+        "pulse-cyan": "pulseCyan 2s infinite",
+        "glow-slow": "glow 4s ease-in-out infinite",
         thinking: "thinking 1.5s ease-in-out infinite",
+        "shimmer": "shimmer 2s linear infinite",
       },
       keyframes: {
         fadeIn: {
@@ -49,18 +58,30 @@ export default {
           "100%": { opacity: "1" },
         },
         slideUp: {
-          "0%": { transform: "translateY(10px)", opacity: "0" },
+          "0%": { transform: "translateY(20px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
-        thinking: {
-          "0%, 100%": { opacity: "0.4" },
+        pulseCyan: {
+          "0%, 100%": { boxShadow: "0 0 5px rgba(0, 229, 255, 0.2), inset 0 0 5px rgba(0, 229, 255, 0.1)" },
+          "50%": { boxShadow: "0 0 15px rgba(0, 229, 255, 0.4), inset 0 0 10px rgba(0, 229, 255, 0.2)" },
+        },
+        glow: {
+          "0%, 100%": { opacity: "0.8" },
           "50%": { opacity: "1" },
+        },
+        thinking: {
+          "0%, 100%": { opacity: "0.4", transform: "scale(0.98)" },
+          "50%": { opacity: "1", transform: "scale(1)" },
+        },
+        shimmer: {
+          "100%": { transform: "translateX(100%)" },
         },
       },
       boxShadow: {
-        card: "0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)",
-        "card-hover": "0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
-        glow: "0 0 20px rgba(14, 165, 233, 0.3)",
+        card: "0 8px 32px 0 rgba(0, 0, 0, 0.8)",
+        neon: "0 0 15px rgba(0, 229, 255, 0.4)",
+        "neon-strong": "0 0 25px rgba(0, 229, 255, 0.6)",
+        glass: "inset 0 0 20px 0 rgba(255, 255, 255, 0.05)",
       },
     },
   },
