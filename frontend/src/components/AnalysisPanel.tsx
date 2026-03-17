@@ -10,7 +10,7 @@ interface AnalysisPanelProps {
 }
 
 export default function AnalysisPanel({ gameState, analysis }: AnalysisPanelProps) {
-  const { isCheck, isCheckmate, isGameOver, isThinking, turn } = gameState;
+  const { isThinking } = gameState;
 
   const classicalScore = analysis?.classical_score ?? 0;
   const barPercent = scoreToBarPercent(classicalScore);
