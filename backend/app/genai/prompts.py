@@ -2,27 +2,52 @@
 Prompt templates for the generative AI coaching layer.
 
 Design principles:
-  - Prompts are structured and reusable
-  - Context is injected from the current game state
-  - The LLM is never asked to generate legal moves
-  - Responses are instructed to be beginner-friendly but technically grounded
-  - System prompt establishes the coach persona clearly
+  - Every prompt starts with a budget preamble so the LLM knows the character
+    limit BEFORE it starts writing and plans accordingly.
+  - A strict output schema follows the preamble so every field is always
+    complete — no free-form text that gets cut off mid-thought.
+  - The LLM is never asked to generate legal moves.
 """
 
-SYSTEM_PROMPT = """You are an expert chess coach with 30 years of experience teaching players of all levels.
+from app.core.config import settings
 
-Your coaching style:
-- Clear, encouraging, and educational
-- Explain strategic concepts in plain English
-- Use chess terminology but always explain it
-- Focus on improving the player's understanding, not just telling them what to do
-- Be concise but insightful — aim for 2-4 paragraphs unless asked for more
-- Reference specific squares, pieces, and patterns when relevant
 
-IMPORTANT: You are coaching a player, not playing chess yourself.
-Never suggest illegal moves or positions not present in the game.
+SYSTEM_PROMPT = """You are an expert chess coach with 30 years of experience.
+
+Your voice: direct, specific, no filler. Chess terms are fine — always used in context.
+You coach the player. You never play for them. Never suggest illegal moves.
+
+You will receive a CHARACTER BUDGET at the top of each request.
+That budget is a hard constraint — plan your entire response to fit within it.
+Front-load the most valuable insight: if the response were cut at any point, the
+text already shown must still be coherent and useful on its own.
 """
 
+
+# ─── Budget preamble injected at the top of every prompt ─────────────────────
+
+def _budget_preamble(max_chars: int) -> str:
+    """
+    Tells the LLM the exact character budget and the rules for staying within it
+    coherently. This is injected at the very top of every user prompt so the
+    model plans its response before writing the first word.
+    """
+    return f"""\
+⚡ RESPONSE BUDGET: {max_chars} characters total (spaces included).
+
+Before you write anything, mentally plan the full response to confirm it fits.
+Rules:
+  1. Fill every schema field in order — skip none.
+  2. Each field = exactly one complete sentence (subject + verb + end punctuation).
+  3. Most critical insight goes FIRST — even a partial read must be useful.
+  4. Zero filler: no greetings, no "as a coach", no restating the question.
+  5. Never end a sentence mid-word or mid-thought to hit the limit — rewrite shorter.
+
+---
+"""
+
+
+# ─── Prompt builders ─────────────────────────────────────────────────────────
 
 def hint_prompt(
     fen: str,
@@ -30,24 +55,20 @@ def hint_prompt(
     move_history: list[str],
     difficulty: str,
 ) -> str:
-    """
-    Build a prompt asking for a strategic hint for the current position.
-    """
     history_text = _format_move_history(move_history)
+    budget = settings.COACH_MAX_CHARS
 
-    return f"""The player is playing as {player_color} in a chess game against an AI opponent set to {difficulty} difficulty.
+    return f"""{_budget_preamble(budget)}\
+Player: {player_color} | AI difficulty: {difficulty}
+FEN: {fen}
+Moves: {history_text}
 
-Current position (FEN): {fen}
-Move history: {history_text}
-It is currently {player_color}'s turn to move.
+Output schema (one complete sentence per field):
 
-Please give the player a helpful strategic hint. Focus on:
-1. What the key strategic themes are in this position
-2. Which pieces or areas of the board deserve attention
-3. What type of move (developing, attacking, defensive, etc.) would be most appropriate
-
-Do NOT give the exact best move — instead explain the concept and let them find it.
-Keep your response to 2-3 paragraphs."""
+SITUATION: [Most important thing happening on the board right now]
+FOCUS: [Specific piece, square, or area that deserves immediate attention — and why]
+IDEA: [The type of plan or move concept to look for — no exact move]
+DANGER: [Opponent's biggest threat right now, or "None" if there is none]"""
 
 
 def explain_last_move_prompt(
@@ -57,23 +78,19 @@ def explain_last_move_prompt(
     move_history: list[str],
     difficulty: str,
 ) -> str:
-    """
-    Build a prompt asking to explain the AI's last move.
-    """
     history_text = _format_move_history(move_history)
+    budget = settings.COACH_MAX_CHARS
 
-    return f"""The AI chess engine (playing at {difficulty} difficulty) just played the move {ai_move_san} (UCI: {ai_move}).
+    return f"""{_budget_preamble(budget)}\
+AI ({difficulty}) played: {ai_move_san} (UCI: {ai_move})
+FEN after move: {fen}
+Move history: {history_text}
 
-Current position after the move (FEN): {fen}
-Full move history: {history_text}
+Output schema (one complete sentence per field):
 
-Please explain why the AI made this move. Cover:
-1. The immediate tactical or strategic purpose of this move
-2. What threat it creates or what weakness it addresses
-3. What the player should watch out for next
-
-Explain this as a coach helping the player understand the AI's strategy.
-Keep your response to 2-3 paragraphs."""
+PURPOSE: [Immediate strategic or tactical goal of this move]
+THREAT: [Concrete threat or weakness it creates or exploits]
+COUNTER: [What the player should prioritize in response]"""
 
 
 def postgame_summary_prompt(
@@ -82,9 +99,6 @@ def postgame_summary_prompt(
     player_color: str,
     result: str,
 ) -> str:
-    """
-    Build a prompt for a comprehensive post-game analysis.
-    """
     result_text = {
         "white_wins": "White won",
         "black_wins": "Black won",
@@ -93,21 +107,22 @@ def postgame_summary_prompt(
     }.get(result, result)
 
     player_side = "White" if player_color.lower() == "white" else "Black"
+    # Postgame gets a larger budget since it covers the whole game
+    budget = settings.COACH_MAX_CHARS * 3
 
-    return f"""Please analyze this chess game. The human player was playing as {player_side} against an AI set to {difficulty} difficulty. {result_text}.
+    return f"""{_budget_preamble(budget)}\
+Player: {player_side} vs AI at {difficulty}. {result_text}.
 
-Game PGN:
+PGN:
 {pgn}
 
-Please provide:
-1. **Opening**: Name and assess how both sides handled the opening
-2. **Key Moments**: Identify 2-3 critical turning points in the game
-3. **Mistakes**: Point out any clear mistakes or missed opportunities for the human player (be specific about move numbers)
-4. **Improvements**: Suggest concrete ways the player can improve
-5. **Summary**: A brief encouraging conclusion
+Output schema (one complete sentence per field):
 
-Format your response with clear sections. Be specific about move numbers when referencing the game.
-Be constructive and educational — the goal is to help the player improve."""
+OPENING: [Name the opening and say whether the player handled it well or poorly]
+TURNING POINT: [The single most critical moment, with move number]
+MISTAKE: [The player's clearest error or missed opportunity, with move number]
+IMPROVEMENT: [One concrete habit or concept the player should work on]
+VERDICT: [One encouraging sentence summarizing the overall performance]"""
 
 
 def chat_prompt(
@@ -116,23 +131,26 @@ def chat_prompt(
     move_history: list[str],
     context: str,
 ) -> str:
-    """
-    Build a prompt for free-form coaching chat.
-    """
     history_text = _format_move_history(move_history)
-    position_text = f"Current position (FEN): {fen}" if fen else "No position provided."
-    context_text = f"Additional context: {context}" if context else ""
+    position_text = f"FEN: {fen}" if fen else "No position provided."
+    context_text = f"Context: {context}" if context else ""
+    budget = settings.COACH_MAX_CHARS
 
-    return f"""The player has a question about chess or the current game.
-
+    return f"""{_budget_preamble(budget)}\
 {position_text}
-Move history: {history_text}
+Moves: {history_text}
 {context_text}
 
-Player's question: {message}
+Player asks: {message}
 
-Please answer as their chess coach. Be helpful, educational, and concise."""
+Output schema (one complete sentence per field):
 
+ANSWER: [Direct answer to the question]
+WHY: [The reason or chess principle behind it]
+TIP: [One actionable thing the player can apply right now]"""
+
+
+# ─── Helpers ─────────────────────────────────────────────────────────────────
 
 def _format_move_history(moves: list[str]) -> str:
     """Format UCI move list as a readable string."""

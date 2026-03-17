@@ -1,16 +1,3 @@
-/**
- * ChessGame — main page layout.
- *
- * Layout:
- *   ┌─────────────────────────────────────────────┐
- *   │                   Header                    │
- *   ├──────────────────┬──────────────────────────┤
- *   │                  │   Controls + Analysis     │
- *   │    Chess Board   │   Coach Chat              │
- *   │                  │   Move History            │
- *   └──────────────────┴──────────────────────────┘
- */
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import Header from "../components/Header";
 import ChessBoard from "../components/ChessBoard";
@@ -19,10 +6,12 @@ import AnalysisPanel from "../components/AnalysisPanel";
 import CoachChat from "../components/CoachChat";
 import MoveHistory from "../components/MoveHistory";
 import NewGameButton from "../components/NewGameButton";
+import CyberLayout from "../components/CyberLayout";
 import { useGame } from "../hooks/useGame";
 import { useCoach } from "../hooks/useCoach";
 import type { Difficulty } from "../types/chess";
-import { AlertCircle, X } from "lucide-react";
+import { AlertCircle, X, Shield, User } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function ChessGame() {
   const { gameState, analysis, error, startNewGame, makeMove, clearError } = useGame();
@@ -37,7 +26,10 @@ export default function ChessGame() {
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const width = entry.contentRect.width;
-        setBoardWidth(Math.min(Math.max(280, width - 16), 560));
+        const height = entry.contentRect.height;
+        // Adjust width to fit both height and width of container
+        const size = Math.min(width - 60, height - 200, 460);
+        setBoardWidth(Math.max(280, size));
       }
     });
 
@@ -48,7 +40,6 @@ export default function ChessGame() {
     return () => observer.disconnect();
   }, []);
 
-  // Extract UCI history from move history for coach
   const moveHistoryUci = gameState.moveHistory.map((m) => m.uci);
 
   const handleNewGame = useCallback(async () => {
@@ -63,130 +54,160 @@ export default function ChessGame() {
     [makeMove]
   );
 
-  // Auto-start a game on first load
   useEffect(() => {
     if (!gameState.gameId) {
       startNewGame("medium");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen xl:h-screen flex flex-col bg-slate-950 text-white xl:overflow-hidden selection:bg-neon-cyan/30">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
-        {/* Error Banner */}
+      <AnimatePresence>
         {error && (
-          <div className="mb-4 flex items-center gap-3 p-3 bg-red-900/30 border border-red-800 rounded-lg text-sm text-red-300 animate-fade-in">
-            <AlertCircle size={16} className="shrink-0" />
-            <span className="flex-1">{error}</span>
-            <button
-              onClick={clearError}
-              className="text-red-400 hover:text-red-200 transition-colors"
-            >
-              <X size={16} />
-            </button>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-20 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xl px-4"
+          >
+            <div className="flex items-center gap-3 p-4 bg-black/80 backdrop-blur-xl border border-neon-red/50 shadow-neon-red/20 shadow-lg rounded text-sm text-neon-red">
+              <AlertCircle size={18} className="shrink-0 animate-pulse" />
+              <div className="flex-1">
+                <span className="font-tech tracking-wider uppercase block text-[10px] mb-1 opacity-60">System Fault // Error_Core</span>
+                <span className="font-medium">{error}</span>
+              </div>
+              <button
+                onClick={clearError}
+                className="p-1 hover:bg-white/5 transition-colors rounded"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-          {/* ─── Left: Chess Board ─── */}
-          <div className="flex flex-col items-center gap-4">
-            {/* Player indicators */}
-            <PlayerBadge name="Engine" color="black" difficulty={gameState.difficulty} />
+      <CyberLayout
+        leftPanel={
+          <div className="flex flex-col h-full gap-3">
+            <div className="space-y-2">
+               <div className="flex items-center gap-2 px-1">
+                 <div className="p-1.5 glass-panel border-neon-cyan/20">
+                    <Shield size={13} className="text-neon-cyan" />
+                 </div>
+                 <div>
+                   <h3 className="font-tech text-[10px] tracking-[0.2em] text-white uppercase">System Matrix</h3>
+                   <span className="text-[8px] text-neon-cyan/40 font-tech uppercase tracking-widest leading-none">AI Control Node</span>
+                 </div>
+               </div>
 
-            <div ref={boardContainerRef} className="w-full max-w-[560px]">
-              <ChessBoard
-                gameState={gameState}
-                onMove={handleMove}
-                boardWidth={boardWidth}
-              />
+               <DifficultySelector
+                 value={selectedDifficulty}
+                 onChange={setSelectedDifficulty}
+                 disabled={gameState.isThinking}
+               />
+
+               <NewGameButton
+                 onClick={handleNewGame}
+                 isLoading={gameState.isThinking && !gameState.gameId}
+                 label="Initiate Protocol"
+               />
             </div>
 
-            <PlayerBadge name="You" color="white" />
-
-            {/* Mobile controls */}
-            <div className="lg:hidden w-full max-w-[560px] space-y-3">
-              <DifficultySelector
-                value={selectedDifficulty}
-                onChange={setSelectedDifficulty}
-                disabled={gameState.isThinking}
-              />
-              <NewGameButton
-                onClick={handleNewGame}
-                isLoading={gameState.isThinking && !gameState.gameId}
-              />
+            <div className="flex-1 min-h-0">
+               <MoveHistory
+                 moves={gameState.moveHistory}
+                 pgn={gameState.pgn}
+               />
             </div>
           </div>
-
-          {/* ─── Right: Controls + Panels ─── */}
-          <div className="flex flex-col gap-4">
-            {/* Game controls — desktop only */}
-            <div className="hidden lg:block card p-4 space-y-4">
-              <DifficultySelector
-                value={selectedDifficulty}
-                onChange={setSelectedDifficulty}
-                disabled={gameState.isThinking}
-              />
-              <NewGameButton
-                onClick={handleNewGame}
-                isLoading={gameState.isThinking && !gameState.gameId}
-              />
-            </div>
-
-            {/* Analysis */}
-            <AnalysisPanel gameState={gameState} analysis={analysis} />
-
-            {/* Coach Chat */}
-            <div className="flex-1 min-h-[320px]">
-              <CoachChat
+        }
+        rightPanel={
+          <div className="flex flex-col h-full">
+             <CoachChat
                 coachHook={coachHook}
                 gameState={gameState}
                 moveHistoryUci={moveHistoryUci}
               />
-            </div>
-
-            {/* Move History */}
-            <div className="h-[220px]">
-              <MoveHistory
-                moves={gameState.moveHistory}
-                pgn={gameState.pgn}
-              />
-            </div>
           </div>
+        }
+        bottomPanel={
+          <AnalysisPanel gameState={gameState} analysis={analysis} />
+        }
+      >
+        <div ref={boardContainerRef} className="w-full h-full flex flex-col items-center justify-center relative p-3">
+           {/* Background Grid Accent */}
+           <div className="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_center,rgba(0,229,255,0.05)_0%,transparent_70%)]" />
+
+           {/* Initial load indicator */}
+           {!gameState.gameId && (
+             <div className="absolute inset-0 z-40 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+               <div className="flex flex-col items-center gap-4">
+                 <motion.div
+                   animate={{ rotate: 360 }}
+                   transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                   className="w-10 h-10 border-2 border-t-neon-cyan border-neon-cyan/20 rounded-full"
+                 />
+                 <span className="font-tech text-[10px] tracking-widest text-neon-cyan uppercase animate-pulse">
+                   Initializing...
+                 </span>
+               </div>
+             </div>
+           )}
+
+           <div className="relative z-10 flex flex-col items-center gap-5">
+             {/* Player Top (AI) */}
+             <motion.div 
+               initial={{ opacity: 0, y: -10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="flex items-center gap-4 group shrink-0"
+             >
+                <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-white/10" />
+                <div className="flex items-center gap-3 glass-panel border-white/5 px-4 py-2">
+                   <div className="w-8 h-8 glass-panel border-neon-cyan/20 flex items-center justify-center bg-black/40">
+                      <Shield size={14} className="text-neon-cyan opacity-60" />
+                   </div>
+                   <div className="flex flex-col">
+                      <span className="font-tech text-[10px] tracking-[0.2em] text-white/40 uppercase">Opposition</span>
+                      <span className="font-tech text-xs tracking-widest text-white group-hover:text-neon-cyan transition-colors">AI_ENTITY_{gameState.difficulty.toUpperCase()}</span>
+                   </div>
+                </div>
+                <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-white/10" />
+             </motion.div>
+
+             {/* Board Container */}
+             <div className="relative">
+               <ChessBoard
+                 gameState={gameState}
+                 onMove={handleMove}
+                 boardWidth={boardWidth}
+               />
+             </div>
+
+             {/* Player Bottom (User) */}
+             <motion.div 
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="flex items-center gap-4 group shrink-0"
+             >
+                <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-white/10" />
+                <div className="flex items-center gap-3 glass-panel border-white/10 px-4 py-2 bg-white/5 border-neon-cyan/30">
+                   <div className="w-8 h-8 glass-panel border-neon-cyan flex items-center justify-center bg-neon-cyan/10">
+                      <User size={14} className="text-neon-cyan" />
+                   </div>
+                   <div className="flex flex-col">
+                      <span className="font-tech text-[10px] tracking-[0.2em] text-neon-cyan uppercase">Authorized User</span>
+                      <span className="font-tech text-xs tracking-widest text-white uppercase">Commander_Unit_01</span>
+                   </div>
+                </div>
+                <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-white/10" />
+             </motion.div>
+           </div>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-surface-border py-4 text-center">
-        <p className="text-xs text-muted">
-          DeepKnight · React · FastAPI · PyTorch · Gemini
-        </p>
-      </footer>
+      </CyberLayout>
     </div>
   );
 }
 
-function PlayerBadge({
-  name,
-  color,
-  difficulty,
-}: {
-  name: string;
-  color: "white" | "black";
-  difficulty?: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-card rounded-full border border-surface-border">
-      <span
-        className="w-4 h-4 rounded-sm border border-slate-600"
-        style={{ backgroundColor: color === "white" ? "#f0d9b5" : "#333" }}
-      />
-      <span className="text-sm font-medium text-slate-200">{name}</span>
-      {difficulty && (
-        <span className="text-xs text-muted">({difficulty})</span>
-      )}
-    </div>
-  );
-}

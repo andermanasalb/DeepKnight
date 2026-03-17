@@ -1,12 +1,8 @@
-/**
- * AnalysisPanel — displays evaluation scores and game info.
- */
-
-import { Activity, Cpu, Brain, ChevronRight } from "lucide-react";
-import clsx from "clsx";
+import { Activity, Cpu, Brain } from "lucide-react";
 import type { AnalysisInfo } from "../types/api";
 import type { GameState } from "../types/chess";
 import { interpretScore, scoreToBarPercent } from "../types/ml";
+import { motion } from "framer-motion";
 
 interface AnalysisPanelProps {
   gameState: GameState;
@@ -14,187 +10,97 @@ interface AnalysisPanelProps {
 }
 
 export default function AnalysisPanel({ gameState, analysis }: AnalysisPanelProps) {
-  const { turn, difficulty, isCheck, isCheckmate, isGameOver, isThinking } = gameState;
+  const { isCheck, isCheckmate, isGameOver, isThinking, turn } = gameState;
 
   const classicalScore = analysis?.classical_score ?? 0;
-  const pytorchScore = analysis?.pytorch_score ?? 0;
   const barPercent = scoreToBarPercent(classicalScore);
   const interpretation = interpretScore(classicalScore);
 
   return (
-    <div className="card p-4 space-y-4">
-      <div className="flex items-center gap-2">
-        <Activity size={16} className="text-brand-400" />
-        <h2 className="text-sm font-semibold text-white">Analysis</h2>
-      </div>
-
-      {/* Game status */}
-      <div className="flex items-center justify-between py-2 border-b border-surface-border">
-        <StatusIndicator gameState={gameState} />
-        <DifficultyBadge difficulty={difficulty} />
-      </div>
-
-      {/* Evaluation bar */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs text-muted">
-          <span>Black</span>
-          <span className="text-white font-medium">{interpretation}</span>
-          <span>White</span>
-        </div>
-
-        <div className="relative h-3 rounded-full bg-gray-800 overflow-hidden">
-          {/* Black side */}
-          <div className="absolute inset-0 bg-gray-900 rounded-full" />
-          {/* White side */}
-          <div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-slate-300 to-white rounded-full transition-all duration-500"
-            style={{ width: `${barPercent}%` }}
-          />
-          {/* Center line */}
-          <div className="absolute inset-y-0 left-1/2 w-0.5 bg-gray-600/50 -translate-x-1/2" />
-        </div>
-
-        <div className="flex justify-between text-xs text-muted">
-          <span>
-            {classicalScore < 0
-              ? `${Math.abs(classicalScore).toFixed(2)} ▲`
-              : ""}
-          </span>
-          <span>
-            {classicalScore > 0
-              ? `${classicalScore.toFixed(2)} ▲`
-              : ""}
-          </span>
-        </div>
-      </div>
-
-      {/* Score breakdown */}
-      <div className="space-y-2">
-        <ScoreRow
-          icon={<Cpu size={13} className="text-blue-400" />}
-          label="Classical"
-          value={classicalScore}
-          subtitle={`Depth ${analysis?.depth_searched ?? 0}`}
-        />
-        <ScoreRow
-          icon={<Brain size={13} className="text-purple-400" />}
-          label="Neural"
-          value={pytorchScore}
-          subtitle="ValueNet"
-          normalize
-        />
-      </div>
-
-      {/* Turn / check info */}
-      <div className="pt-2 border-t border-surface-border space-y-1.5">
-        <InfoRow
-          label="Turn"
-          value={
-            isGameOver
-              ? "Game over"
-              : isThinking
-              ? "Calculating..."
-              : `${turn === "white" ? "White" : "Black"} to move`
-          }
-        />
-        {isCheck && !isCheckmate && (
-          <div className="flex items-center gap-1.5 text-xs text-red-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-            Check!
+    <div className="w-full flex flex-col gap-2">
+      {/* Top Meta Info */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Activity size={14} className="text-neon-cyan" />
+            <span className="font-tech text-[10px] tracking-[0.2em] text-neon-cyan uppercase">Neural Evaluation</span>
           </div>
-        )}
+          <div className="h-[10px] w-[1px] bg-white/10" />
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 opacity-60">
+              <Cpu size={12} className="text-neon-cyan" />
+              <span className="font-tech text-[9px] text-white tracking-widest uppercase">Depth: {analysis?.depth_searched ?? 0}</span>
+            </div>
+            <div className="flex items-center gap-2 opacity-60">
+              <Brain size={12} className="text-neon-cyan" />
+              <span className="font-tech text-[9px] text-white tracking-widest uppercase">Neural: {analysis?.pytorch_score?.toFixed(3) ?? "0.000"}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {isThinking && (
+            <span className="font-tech text-[10px] text-neon-cyan animate-pulse tracking-widest uppercase">Recalculating...</span>
+          )}
+          <span className="font-tech text-[10px] text-white/40 tracking-widest uppercase">Status: </span>
+          <StatusLabel gameState={gameState} />
+        </div>
+      </div>
+
+      {/* Main Eval Bar Container */}
+      <div className="relative h-12 w-full overflow-hidden border border-white/10 group" style={{ background: '#0a0f1a' }}>
+        {/* White advantage fill from RIGHT */}
+        <motion.div
+          initial={{ width: "50%" }}
+          animate={{ width: `${barPercent}%` }}
+          transition={{ type: "spring", stiffness: 50, damping: 20 }}
+          className="absolute inset-y-0 right-0 bg-gradient-to-l from-white/90 to-white/55"
+        >
+          {/* Glowing divider at the left edge of white fill */}
+          <div className="absolute left-0 inset-y-0 w-[2px] bg-white shadow-[0_0_8px_3px_rgba(255,255,255,0.6)]" />
+        </motion.div>
+
+        {/* Black Side Label */}
+        <div className="absolute left-4 inset-y-0 flex items-center z-10 pointer-events-none">
+          <span className="font-tech text-xs tracking-[0.3em] text-white/70 drop-shadow-[0_0_4px_rgba(0,0,0,1)]">BLACK</span>
+        </div>
+
+        {/* White Side Label */}
+        <div className="absolute right-4 inset-y-0 flex items-center z-10 pointer-events-none">
+          <span className="font-tech text-xs tracking-[0.3em] text-slate-800 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]">WHITE</span>
+        </div>
+
+        {/* Score Interpretation + Value */}
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none gap-2">
+          <motion.div
+            key={interpretation}
+            initial={{ y: 5, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="flex items-center gap-2 px-3 py-0.5 bg-black/60 backdrop-blur-md rounded border border-white/15"
+          >
+            <span className="font-tech text-[10px] tracking-[0.2em] text-white uppercase">{interpretation}</span>
+            <span className="font-mono text-[10px] text-neon-cyan/70 tabular-nums">
+              {classicalScore >= 0 ? "+" : ""}{classicalScore.toFixed(2)}
+            </span>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────
+function StatusLabel({ gameState }: { gameState: GameState }) {
+  const { isGameOver, isCheckmate, isStalemate, isCheck, turn } = gameState;
 
-function StatusIndicator({ gameState }: { gameState: GameState }) {
-  const { isGameOver, isCheckmate, isStalemate, isCheck, isThinking } = gameState;
-
-  if (isCheckmate) {
-    return <span className="badge-red">Checkmate</span>;
-  }
-  if (isStalemate) {
-    return <span className="badge-yellow">Stalemate</span>;
-  }
-  if (isGameOver) {
-    return <span className="badge-yellow">Draw</span>;
-  }
-  if (isThinking) {
-    return (
-      <span className="badge bg-brand-900/50 text-brand-300 border border-brand-700 animate-pulse">
-        Thinking...
-      </span>
-    );
-  }
-  if (isCheck) {
-    return <span className="badge-red">Check</span>;
-  }
-  return <span className="badge-green">Playing</span>;
-}
-
-function DifficultyBadge({ difficulty }: { difficulty: string }) {
-  const colorMap: Record<string, string> = {
-    easy: "badge-green",
-    medium: "badge-yellow",
-    hard: "badge-red",
-  };
+  if (isCheckmate) return <span className="text-neon-red font-tech text-[10px] tracking-widest uppercase mb-[-1px]">TERMINATED // CHECKMATE</span>;
+  if (isStalemate) return <span className="text-neon-pink font-tech text-[10px] tracking-widest uppercase mb-[-1px]">LOCKED // STALEMATE</span>;
+  if (isGameOver) return <span className="text-white/60 font-tech text-[10px] tracking-widest uppercase mb-[-1px]">COMPLETED</span>;
+  if (isCheck) return <span className="text-neon-red font-tech text-[10px] tracking-widest uppercase mb-[-1px] animate-pulse">BREACH // CHECK</span>;
+  
   return (
-    <span className={colorMap[difficulty] ?? "badge-blue"}>
-      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+    <span className="text-neon-cyan font-tech text-[10px] tracking-widest uppercase mb-[-1px]">
+      WAITING // {turn === "white" ? "WHITE_UNIT" : "AI_CORE"}
     </span>
   );
 }
 
-function ScoreRow({
-  icon,
-  label,
-  value,
-  subtitle,
-  normalize = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  subtitle?: string;
-  normalize?: boolean;
-}) {
-  const displayValue = normalize
-    ? value.toFixed(3)
-    : (value >= 0 ? "+" : "") + value.toFixed(3);
-
-  const color =
-    Math.abs(value) < 0.05
-      ? "text-slate-400"
-      : value > 0
-      ? "text-emerald-400"
-      : "text-red-400";
-
-  return (
-    <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-surface hover:bg-surface-hover transition-colors">
-      <div className="flex items-center gap-2">
-        {icon}
-        <div>
-          <div className="text-xs font-medium text-slate-200">{label}</div>
-          {subtitle && (
-            <div className="text-xs text-muted">{subtitle}</div>
-          )}
-        </div>
-      </div>
-      <span className={clsx("text-sm font-mono font-semibold", color)}>
-        {displayValue}
-      </span>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between text-xs">
-      <span className="text-muted">{label}</span>
-      <span className="text-slate-300">{value}</span>
-    </div>
-  );
-}

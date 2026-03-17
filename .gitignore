@@ -64,8 +64,6 @@ yarn-error.log*
 chess.db
 
 # ML / PyTorch
-*.pt
-*.pth
 *.onnx
 mlruns/
 mlartifacts/
@@ -83,6 +81,9 @@ data/models/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/models/.gitkeep
+# Allow model checkpoints needed for deployment
+!data/models/*.pt
+!data/models/*.pth
 
 # Logs
 logs/

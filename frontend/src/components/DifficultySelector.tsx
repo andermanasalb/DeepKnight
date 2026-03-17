@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import type { Difficulty } from "../types/chess";
-import { DIFFICULTY_DESCRIPTIONS, DIFFICULTY_LABELS } from "../types/chess";
+import { DIFFICULTY_LABELS } from "../types/chess";
+import { motion } from "framer-motion";
 
 interface DifficultySelectorProps {
   value: Difficulty;
@@ -8,16 +9,10 @@ interface DifficultySelectorProps {
   disabled?: boolean;
 }
 
-const DIFFICULTY_COLORS: Record<Difficulty, string> = {
-  easy: "text-emerald-400 border-emerald-700 bg-emerald-900/20",
-  medium: "text-yellow-400 border-yellow-700 bg-yellow-900/20",
-  hard: "text-red-400 border-red-700 bg-red-900/20",
-};
-
-const DIFFICULTY_SELECTED: Record<Difficulty, string> = {
-  easy: "ring-2 ring-emerald-500 border-emerald-500",
-  medium: "ring-2 ring-yellow-500 border-yellow-500",
-  hard: "ring-2 ring-red-500 border-red-500",
+const DIFFICULTY_CONFIG: Record<Difficulty, { color: string; shadow: string }> = {
+  easy: { color: "text-neon-cyan", shadow: "shadow-neon" },
+  medium: { color: "text-neon-blue", shadow: "shadow-[0_0_15px_rgba(0,178,255,0.4)]" },
+  hard: { color: "text-neon-red", shadow: "shadow-[0_0_15px_rgba(255,61,61,0.4)]" },
 };
 
 export default function DifficultySelector({
@@ -26,29 +21,54 @@ export default function DifficultySelector({
   disabled = false,
 }: DifficultySelectorProps) {
   return (
-    <div className="space-y-2">
-      <label className="text-xs font-medium text-muted uppercase tracking-wider">
-        Difficulty
-      </label>
-      <div className="grid grid-cols-3 gap-2">
-        {(["easy", "medium", "hard"] as Difficulty[]).map((level) => (
-          <button
-            key={level}
-            onClick={() => onChange(level)}
-            disabled={disabled}
-            className={clsx(
-              "relative flex flex-col items-center p-2.5 rounded-lg border transition-all duration-200 text-center disabled:opacity-40 disabled:cursor-not-allowed",
-              DIFFICULTY_COLORS[level],
-              value === level
-                ? DIFFICULTY_SELECTED[level]
-                : "opacity-60 hover:opacity-90"
-            )}
-          >
-            <span className="text-xs font-semibold">{DIFFICULTY_LABELS[level]}</span>
-          </button>
-        ))}
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <label className="font-tech text-[9px] tracking-[0.15em] text-white/30 uppercase">
+          AI Complexity
+        </label>
+        <div className="h-[1px] flex-1 mx-3 bg-white/5" />
       </div>
-      <p className="text-xs text-muted">{DIFFICULTY_DESCRIPTIONS[value]}</p>
+
+      <div className="grid grid-cols-3 gap-2">
+        {(["easy", "medium", "hard"] as Difficulty[]).map((level) => {
+          const isSelected = value === level;
+          const config = DIFFICULTY_CONFIG[level];
+
+          return (
+            <button
+              key={level}
+              onClick={() => onChange(level)}
+              disabled={disabled}
+              className={clsx(
+                "relative group flex items-center justify-center p-1.5 transition-all duration-300 disabled:opacity-20",
+                "border bg-surface-card/40 backdrop-blur-md",
+                isSelected
+                  ? `${config.color} border-white/20 ${config.shadow} shadow-lg z-10`
+                  : "border-white/5 text-white/40 hover:border-white/20 hover:text-white/80"
+              )}
+            >
+              {/* Selected Highlight Overlay */}
+              {isSelected && (
+                <motion.div
+                  layoutId="difficulty-glow"
+                  className="absolute inset-0 border border-inherit pointer-events-none"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                >
+                  <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/60" />
+                  <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-white/60" />
+                  <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-white/60" />
+                  <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white/60" />
+                </motion.div>
+              )}
+
+              <span className="font-tech text-[9px] tracking-[0.15em] font-bold uppercase">
+                {DIFFICULTY_LABELS[level]}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
+

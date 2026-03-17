@@ -29,7 +29,8 @@ class Settings(BaseSettings):
     # Generative AI
     GOOGLE_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.0-flash"
-    GEMINI_MAX_TOKENS: int = 1024
+    GEMINI_MAX_TOKENS: int = 600
+    COACH_MAX_CHARS: int = 480  # visible character budget communicated to the LLM
 
     # ML / PyTorch
     MODEL_CHECKPOINT_PATH: str = "data/models/value_net.pt"
