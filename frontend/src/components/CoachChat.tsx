@@ -170,13 +170,13 @@ function MessagePacket({ message }: { message: CoachMessage }) {
       )}
     >
       <div className={clsx(
-        "max-w-[90%] p-3 relative overflow-hidden",
-        isSystem ? "bg-neon-red/10 border-l-2 border-neon-red text-neon-red" : 
+        "max-w-[90%] p-3 relative",
+        isSystem ? "bg-neon-red/10 border-l-2 border-neon-red text-neon-red" :
         isCoach ? "bg-neon-cyan/5 border-l-2 border-neon-cyan text-slate-200" :
         "bg-white/5 border-r-2 border-white/40 text-slate-300"
       )}>
         {/* Subtle background decoration */}
-        <div className="absolute top-0 right-0 w-8 h-8 opacity-[0.03] pointer-events-none">
+        <div className="absolute top-0 right-0 w-8 h-8 opacity-[0.03] pointer-events-none overflow-hidden">
           <Cpu size={32} />
         </div>
         
