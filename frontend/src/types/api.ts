@@ -85,6 +85,7 @@ export interface HintRequest {
 export interface HintResponse {
   hint: string;
   suggested_concept: string;
+  suggested_move_uci: string | null;
   tokens_used: number;
 }
 

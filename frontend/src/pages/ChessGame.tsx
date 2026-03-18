@@ -49,9 +49,10 @@ export default function ChessGame() {
 
   const handleMove = useCallback(
     async (moveUci: string) => {
+      coachHook.clearSuggestedMove();
       await makeMove(moveUci);
     },
-    [makeMove]
+    [makeMove, coachHook]
   );
 
   useEffect(() => {
@@ -183,6 +184,7 @@ export default function ChessGame() {
                  gameState={gameState}
                  onMove={handleMove}
                  boardWidth={boardWidth}
+                 suggestedMove={coachHook.suggestedMove}
                />
              </div>
 

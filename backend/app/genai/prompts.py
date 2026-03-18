@@ -53,21 +53,25 @@ def hint_prompt(
     player_color: str,
     move_history: list[str],
     difficulty: str,
+    legal_moves_san: list[str] | None = None,
 ) -> str:
     history_text = _format_move_history(move_history)
     budget = settings.COACH_MAX_CHARS
+    moves_text = ", ".join(legal_moves_san[:25]) if legal_moves_san else "unknown"
 
     return f"""{_budget_preamble(budget)}\
 Player: {player_color} | AI difficulty: {difficulty}
 FEN: {fen}
 Moves: {history_text}
+Legal moves: {moves_text}
 
 Output schema (one complete sentence per field):
 
 SITUATION: [Most important thing happening on the board right now]
 FOCUS: [Specific piece, square, or area that deserves immediate attention — and why]
-IDEA: [The type of plan or move concept to look for — no exact move]
-DANGER: [Opponent's biggest threat right now, or "None" if there is none]"""
+IDEA: [The type of plan or move concept to look for]
+DANGER: [Opponent's biggest threat right now, or "None" if there is none]
+MOVE: [Pick the single best move from the legal moves list above — write ONLY the SAN notation, nothing else]"""
 
 
 def explain_last_move_prompt(

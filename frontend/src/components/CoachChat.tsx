@@ -196,12 +196,22 @@ function MessagePacket({ message }: { message: CoachMessage }) {
           {message.content}
         </p>
 
-        {isCoach && message.type && (
-          <div className="mt-2 pt-2 border-t border-neon-cyan/10 flex items-center gap-2">
-            <div className="w-1 h-1 bg-neon-cyan rounded-full animate-pulse" />
-            <span className="text-[8px] font-tech text-neon-cyan/40 uppercase tracking-[0.3em]">
-              {message.type} data stream
-            </span>
+        {isCoach && (message.suggestedMove || message.type) && (
+          <div className="mt-2 pt-2 border-t border-neon-cyan/10 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-1 bg-neon-cyan rounded-full animate-pulse" />
+              <span className="text-[8px] font-tech text-neon-cyan/40 uppercase tracking-[0.3em]">
+                {message.type} data stream
+              </span>
+            </div>
+            {message.suggestedMove && (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-amber-400/40 bg-amber-400/10">
+                <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
+                <span className="text-[9px] font-tech text-amber-400 uppercase tracking-widest">
+                  Move shown on board
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>

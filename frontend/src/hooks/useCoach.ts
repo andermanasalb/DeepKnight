@@ -14,17 +14,20 @@ export interface CoachMessage {
   content: string;
   timestamp: Date;
   type?: "hint" | "explain" | "postgame" | "chat";
+  suggestedMove?: string;
 }
 
 export interface UseCoachReturn {
   messages: CoachMessage[];
   isLoading: boolean;
   error: string | null;
+  suggestedMove: string | null;
   getHint: (fen: string, playerColor: PlayerColor, moveHistory: string[], difficulty: Difficulty) => Promise<void>;
   explainLastMove: (fen: string, aiMove: string, aiMoveSan: string, moveHistory: string[], difficulty: Difficulty) => Promise<void>;
   getPostgameAnalysis: (pgn: string, difficulty: Difficulty, playerColor: PlayerColor, result: string) => Promise<void>;
   sendChatMessage: (message: string, fen: string, moveHistory: string[]) => Promise<void>;
   clearMessages: () => void;
+  clearSuggestedMove: () => void;
 }
 
 let messageCounter = 0;
@@ -43,12 +46,13 @@ export function useCoach(): UseCoachReturn {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [suggestedMove, setSuggestedMove] = useState<string | null>(null);
 
   const addMessage = useCallback(
-    (role: CoachMessageRole, content: string, type?: CoachMessage["type"]) => {
+    (role: CoachMessageRole, content: string, type?: CoachMessage["type"], suggestedMove?: string) => {
       setMessages((prev) => [
         ...prev,
-        { id: nextId(), role, content, timestamp: new Date(), type },
+        { id: nextId(), role, content, timestamp: new Date(), type, suggestedMove },
       ]);
     },
     []
@@ -76,7 +80,9 @@ export function useCoach(): UseCoachReturn {
       withLoading(async () => {
         addMessage("user", "What should I be thinking about here?", "hint");
         const result = await coachApi.getHint({ fen, player_color: playerColor, move_history: moveHistory, difficulty });
-        addMessage("coach", result.hint, "hint");
+        const move = result.suggested_move_uci ?? undefined;
+        addMessage("coach", result.hint, "hint", move);
+        if (move) setSuggestedMove(move);
       }),
     [withLoading, addMessage]
   );
@@ -124,16 +130,21 @@ export function useCoach(): UseCoachReturn {
   const clearMessages = useCallback(() => {
     setMessages([]);
     setError(null);
+    setSuggestedMove(null);
   }, []);
+
+  const clearSuggestedMove = useCallback(() => setSuggestedMove(null), []);
 
   return {
     messages,
     isLoading,
     error,
+    suggestedMove,
     getHint,
     explainLastMove,
     getPostgameAnalysis,
     sendChatMessage,
     clearMessages,
+    clearSuggestedMove,
   };
 }

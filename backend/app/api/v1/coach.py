@@ -51,6 +51,7 @@ async def get_hint(request: HintRequest) -> HintResponse:
     return HintResponse(
         hint=result["hint"],
         suggested_concept=result.get("suggested_concept", ""),
+        suggested_move_uci=result.get("suggested_move_uci"),
         tokens_used=result.get("tokens_used", 0),
     )
 

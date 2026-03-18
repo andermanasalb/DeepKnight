@@ -15,6 +15,7 @@ class HintRequest(BaseModel):
 class HintResponse(BaseModel):
     hint: str
     suggested_concept: str
+    suggested_move_uci: str | None = None
     tokens_used: int
 
 

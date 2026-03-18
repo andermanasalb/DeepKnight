@@ -86,20 +86,25 @@ class CoachService:
         difficulty: str,
     ) -> dict:
         """Get a strategic hint for the current position."""
+        legal_moves_san = [board.san(m) for m in board.legal_moves]
+
         prompt = hint_prompt(
             fen=board.fen(),
             player_color=player_color,
             move_history=move_history,
             difficulty=difficulty,
+            legal_moves_san=legal_moves_san,
         )
 
         response, tokens = await self._call_gemini(prompt)
 
         concept = _extract_concept(response)
+        suggested_move_uci = _extract_suggested_move(response, board)
 
         return {
             "hint": response,
             "suggested_concept": concept,
+            "suggested_move_uci": suggested_move_uci,
             "tokens_used": tokens,
         }
 
@@ -228,3 +233,25 @@ def _extract_opening_name(text: str) -> str:
         if any(kw in text_lower for kw in keywords):
             return opening_name
     return "Unknown Opening"
+
+
+def _extract_suggested_move(text: str, board: chess.Board) -> str | None:
+    """Parse the MOVE: field from a hint response and validate it is legal."""
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if stripped.upper().startswith("MOVE:"):
+            move_text = stripped.split(":", 1)[1].strip().split()[0]  # take first token only
+            # Try SAN
+            try:
+                move = board.parse_san(move_text)
+                return move.uci()
+            except Exception:
+                pass
+            # Try UCI
+            try:
+                move = chess.Move.from_uci(move_text)
+                if move in board.legal_moves:
+                    return move_text
+            except Exception:
+                pass
+    return None
