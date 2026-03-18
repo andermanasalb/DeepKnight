@@ -13,7 +13,6 @@ Usage:
   python -m app.ml.training.dummy_data
 """
 
-import os
 import random
 from pathlib import Path
 
@@ -136,7 +135,7 @@ if __name__ == "__main__":
 
     X, y = generate_dataset(n_positions=TOTAL_POSITIONS)
 
-    print(f"\nDataset statistics:")
+    print("\nDataset statistics:")
     print(f"  Total samples: {len(X):,}")
     print(f"  X shape: {X.shape}")
     print(f"  y range: [{y.min():.3f}, {y.max():.3f}]")

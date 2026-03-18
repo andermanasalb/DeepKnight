@@ -9,7 +9,6 @@ Preprocesses game data before sending to the LLM:
 
 import chess
 
-from app.chess.pgn_utils import pgn_to_san_list
 from app.engine.evaluation import ClassicalEvaluator
 
 evaluator = ClassicalEvaluator()

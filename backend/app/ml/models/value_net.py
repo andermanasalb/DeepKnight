@@ -15,7 +15,6 @@ Design notes:
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 INPUT_DIM = 768  # 12 planes × 64 squares
 

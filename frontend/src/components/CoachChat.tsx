@@ -55,30 +55,30 @@ export default function CoachChat({ coachHook, gameState, moveHistoryUci }: Coac
   return (
     <div className="flex flex-col h-full min-h-0 bg-transparent">
       {/* Header Info */}
-      <div className="flex items-center justify-between mb-4 px-1">
-        <div className="flex items-center gap-2">
-          <Cpu size={16} className="text-neon-cyan" />
-          <h2 className="font-tech text-xs tracking-[0.2em] text-neon-cyan uppercase">AI Strategic Core</h2>
+      <div className="flex items-center justify-between mb-2 px-1">
+        <div className="flex items-center gap-1.5">
+          <Cpu size={12} className="text-neon-cyan" />
+          <h2 className="font-tech text-[9px] tracking-[0.2em] text-neon-cyan uppercase">AI Strategic Core</h2>
         </div>
-        <div className="text-[10px] font-tech text-neon-cyan/40 tracking-wider">SECURE CONNECTION // 0xCC1</div>
+        <div className="text-[8px] font-tech text-neon-cyan/40 tracking-wider">SECURE // 0xCC1</div>
       </div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-3 gap-1.5 mb-2">
         <QuickActionButton
-          icon={<Lightbulb size={12} />}
+          icon={<Lightbulb size={10} />}
           label="HINT"
           onClick={handleHint}
           disabled={isLoading || gameState.isGameOver || gameState.isThinking}
         />
         <QuickActionButton
-          icon={<Search size={12} />}
+          icon={<Search size={10} />}
           label="WHY?"
           onClick={handleExplain}
           disabled={isLoading || !gameState.lastAiMove}
         />
         <QuickActionButton
-          icon={<BarChart2 size={12} />}
+          icon={<BarChart2 size={10} />}
           label="REPORT"
           onClick={handlePostGame}
           disabled={isLoading || !gameState.isGameOver}
@@ -86,7 +86,7 @@ export default function CoachChat({ coachHook, gameState, moveHistoryUci }: Coac
       </div>
 
       {/* Messages */}
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-4 mb-4 pr-1 scrollbar-thin scrollbar-thumb-neon-cyan/20 scrollbar-track-transparent">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 mb-2 pr-1 scrollbar-thin scrollbar-thumb-neon-cyan/20 scrollbar-track-transparent">
         <AnimatePresence initial={false}>
           {messages.map((message) => (
             <MessagePacket key={message.id} message={message} />
@@ -148,10 +148,10 @@ function QuickActionButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="flex flex-col items-center justify-center gap-1.5 p-2 glass-panel border-neon-cyan/20 hover:border-neon-cyan/60 text-neon-cyan/60 hover:text-neon-cyan disabled:opacity-20 transition-all active:scale-95 group"
+      className="flex flex-col items-center justify-center gap-1 p-1.5 glass-panel border-neon-cyan/20 hover:border-neon-cyan/60 text-neon-cyan/60 hover:text-neon-cyan disabled:opacity-20 transition-all active:scale-95 group"
     >
       <div className="group-hover:shadow-neon transition-shadow">{icon}</div>
-      <span className="font-tech text-[9px] tracking-widest uppercase">{label}</span>
+      <span className="font-tech text-[8px] tracking-widest uppercase">{label}</span>
     </button>
   );
 }

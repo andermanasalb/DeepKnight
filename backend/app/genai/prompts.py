@@ -11,7 +11,6 @@ Design principles:
 
 from app.core.config import settings
 
-
 SYSTEM_PROMPT = """You are an expert chess coach with 30 years of experience.
 
 Your voice: direct, specific, no filler. Chess terms are fine — always used in context.
@@ -141,9 +140,13 @@ def chat_prompt(
 Moves: {history_text}
 {context_text}
 
-Player asks: {message}
+Player says: {message}
 
-Output schema (one complete sentence per field):
+IMPORTANT ROUTING RULE:
+- If the message is casual, social, or off-topic (greetings, jokes, small talk, "how are you", etc.) — respond naturally and conversationally in 1-2 sentences. Skip the schema entirely.
+- If the message is about chess, the position, strategy, or the game — use the schema below.
+
+Chess output schema (one complete sentence per field):
 
 ANSWER: [Direct answer to the question]
 WHY: [The reason or chess principle behind it]

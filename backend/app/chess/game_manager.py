@@ -8,9 +8,8 @@ Wraps python-chess Board with additional bookkeeping:
 """
 
 import uuid
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from dataclasses import dataclass
+from datetime import UTC, datetime
 
 import chess
 import chess.pgn
@@ -60,7 +59,7 @@ class GameManager:
     ) -> GameState:
         """Create and store a new game."""
         game_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         color = chess.WHITE if player_color.lower() == "white" else chess.BLACK
 
@@ -77,10 +76,10 @@ class GameManager:
         self._games[game_id] = state
         return state
 
-    def get_game(self, game_id: str) -> Optional[GameState]:
+    def get_game(self, game_id: str) -> GameState | None:
         return self._games.get(game_id)
 
-    def apply_move(self, game_id: str, move_uci: str) -> Optional[GameState]:
+    def apply_move(self, game_id: str, move_uci: str) -> GameState | None:
         """
         Apply a move to a game. Returns updated state or None if game not found.
         Raises ValueError for illegal moves.
@@ -95,7 +94,7 @@ class GameManager:
 
         state.board.push(move)
         state.move_history_uci.append(move_uci)
-        state.updated_at = datetime.now(timezone.utc)
+        state.updated_at = datetime.now(UTC)
 
         # Update status
         if state.board.is_game_over():

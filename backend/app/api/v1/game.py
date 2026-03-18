@@ -184,7 +184,6 @@ def _build_pgn(move_history: list[str], board_after: chess.Board) -> str:
                 node = node.add_variation(move)
                 replay.push(move)
         # Include the current board moves too
-        import io
         return str(game_board)
     except Exception:
         return ""

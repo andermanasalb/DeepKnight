@@ -18,12 +18,12 @@ For this scaffold:
 
 from pathlib import Path
 
+import chess
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 
 from app.engine.encoding import encode_board
-import chess
 
 
 class ChessPositionDataset(Dataset):

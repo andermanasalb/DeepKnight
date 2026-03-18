@@ -4,7 +4,6 @@ Integration tests for the Game API endpoints.
 Uses httpx AsyncClient for async test support with FastAPI.
 """
 
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
@@ -153,7 +152,7 @@ class TestBestMove:
         import chess
         fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         response = await client.get(
-            f"/api/v1/game/best_move",
+            "/api/v1/game/best_move",
             params={"fen": fen, "difficulty": "easy"},
         )
         assert response.status_code == 200

@@ -5,7 +5,6 @@ Used for very shallow depths (Easy mode with depth=2) where the
 overhead of alpha-beta is minimal and code clarity matters more.
 """
 
-from typing import Optional
 
 import chess
 
@@ -55,7 +54,7 @@ def minimax(
         return best
 
 
-def minimax_best_move(board: chess.Board, depth: int) -> tuple[Optional[chess.Move], float]:
+def minimax_best_move(board: chess.Board, depth: int) -> tuple[chess.Move | None, float]:
     """
     Find the best move using minimax.
 

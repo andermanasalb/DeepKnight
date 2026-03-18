@@ -13,12 +13,10 @@ Usage:
 """
 
 import argparse
-import os
 from pathlib import Path
 
 import mlflow
 import mlflow.pytorch
-import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -209,7 +207,7 @@ def train(
         mlflow.log_artifact(str(best_model_path), "checkpoints")
 
         run_id = run.info.run_id
-        print(f"\n  Training complete!")
+        print("\n  Training complete!")
         print(f"  Best val loss: {best_val_loss:.5f}")
         print(f"  MLflow run ID: {run_id}")
         print(f"  Model saved to: {best_model_path}")

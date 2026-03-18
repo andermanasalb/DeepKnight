@@ -7,15 +7,14 @@ and applies optional randomness for Easy mode.
 """
 
 import random
-from typing import Optional
 
 import chess
 
+from app.core.config import settings
+from app.core.logging import get_logger
 from app.engine.alphabeta import AlphaBetaEngine
 from app.engine.levels import DifficultyLevel, get_level
 from app.engine.minimax import minimax_best_move
-from app.core.config import settings
-from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -38,7 +37,7 @@ class EngineService:
             use_neural=self.level.use_neural,
         )
 
-    def get_best_move(self, board: chess.Board) -> tuple[Optional[chess.Move], int]:
+    def get_best_move(self, board: chess.Board) -> tuple[chess.Move | None, int]:
         """
         Compute the best move for the current side to move.
 
@@ -55,7 +54,7 @@ class EngineService:
         # Medium / Hard: use alpha-beta with optional neural blending
         return self._alpha_beta_move(board)
 
-    def _easy_move(self, board: chess.Board) -> tuple[Optional[chess.Move], int]:
+    def _easy_move(self, board: chess.Board) -> tuple[chess.Move | None, int]:
         """
         Easy mode: shallow minimax with occasional random move selection.
         """
@@ -69,7 +68,7 @@ class EngineService:
 
         return best_move, self.level.depth
 
-    def _alpha_beta_move(self, board: chess.Board) -> tuple[Optional[chess.Move], int]:
+    def _alpha_beta_move(self, board: chess.Board) -> tuple[chess.Move | None, int]:
         """
         Medium/Hard mode: alpha-beta negamax with move ordering
         and optional PyTorch neural evaluation blending.

@@ -14,10 +14,9 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from app.ml.models.value_net import ValueNet, build_value_net
+from app.ml.models.value_net import build_value_net
 from app.ml.training.dataset import ChessPositionDataset
 
 DATA_DIR = Path("data/processed")

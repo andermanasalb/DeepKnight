@@ -9,7 +9,6 @@ from app.engine.alphabeta import AlphaBetaEngine
 from app.engine.encoding import encode_board, encode_board_tensor
 from app.engine.evaluation import ClassicalEvaluator
 from app.engine.levels import get_level
-from app.engine.minimax import minimax_best_move
 from app.engine.move_ordering import order_moves
 
 
@@ -145,7 +144,7 @@ class TestAlphaBeta:
         # Position with checkmate in one for White
         # White queen on h5 can deliver checkmate on f7
         board = chess.Board("rnb1kbnr/pppp1ppp/8/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 2 3")
-        engine = AlphaBetaEngine(depth=2)
+        engine = AlphaBetaEngine(depth=3)
         move, score = engine.search(board)
         # Scholar's mate: Qxf7#
         assert move is not None

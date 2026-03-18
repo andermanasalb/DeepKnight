@@ -14,7 +14,6 @@ Features:
 """
 
 import time
-from typing import Optional
 
 import chess
 import chess.polyglot
@@ -58,7 +57,7 @@ class AlphaBetaEngine:
     def nodes_searched(self) -> int:
         return self._nodes_searched
 
-    def search(self, board: chess.Board) -> tuple[Optional[chess.Move], float]:
+    def search(self, board: chess.Board) -> tuple[chess.Move | None, float]:
         """Run iterative deepening search, returns (best_move, score)."""
         if board.is_game_over():
             return None, 0.0
@@ -68,7 +67,7 @@ class AlphaBetaEngine:
         self._timed_out = False
         self._transposition_table.clear()
 
-        best_move: Optional[chess.Move] = None
+        best_move: chess.Move | None = None
         best_score = NEG_INF
 
         # Iterative deepening: search progressively deeper
@@ -86,7 +85,7 @@ class AlphaBetaEngine:
 
     def _root_search(
         self, board: chess.Board, depth: int
-    ) -> tuple[Optional[chess.Move], float]:
+    ) -> tuple[chess.Move | None, float]:
         """Search at the root node, returning (best_move, best_score)."""
         alpha = NEG_INF
         beta = INF

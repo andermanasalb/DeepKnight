@@ -3,7 +3,6 @@ Gemini-powered chess coaching. Handles prompts, API calls, and response parsing.
 The client is lazy-loaded so the app starts fine even without an API key set.
 """
 
-from typing import Optional
 
 import chess
 

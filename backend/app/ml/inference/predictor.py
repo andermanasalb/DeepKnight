@@ -10,7 +10,6 @@ Handles:
 
 import threading
 from pathlib import Path
-from typing import Optional
 
 import chess
 import torch
@@ -36,7 +35,7 @@ class ModelPredictor:
     def __init__(self, device: str | None = None):
         from app.core.config import settings
         self.device = device or settings.DEVICE
-        self.model: Optional[ValueNet] = None
+        self.model: ValueNet | None = None
         self._lock = threading.Lock()
         self._is_loaded = False
 
@@ -134,7 +133,6 @@ class ModelPredictor:
             return [0.0] * len(boards)
 
         try:
-            import numpy as np
             from app.engine.encoding import encode_batch
 
             batch_arr = encode_batch(boards)
