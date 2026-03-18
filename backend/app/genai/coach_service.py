@@ -240,7 +240,7 @@ def _extract_suggested_move(text: str, board: chess.Board) -> str | None:
     for line in text.split("\n"):
         stripped = line.strip()
         if stripped.upper().startswith("MOVE:"):
-            move_text = stripped.split(":", 1)[1].strip().split()[0]  # take first token only
+            move_text = stripped.split(":", 1)[1].strip().split()[0].rstrip(".,;")  # strip trailing punctuation
             # Try SAN
             try:
                 move = board.parse_san(move_text)
