@@ -68,20 +68,6 @@ export default function ChessBoard({
   const customSquareStyles = useMemo(() => {
     const styles: Record<string, React.CSSProperties> = {};
 
-    // Suggested move from coach — amber/gold highlight
-    if (suggestedMove && suggestedMove.length >= 4) {
-      const from = suggestedMove.slice(0, 2) as Square;
-      const to = suggestedMove.slice(2, 4) as Square;
-      styles[from] = {
-        background: "rgba(251, 191, 36, 0.2)",
-        boxShadow: "inset 0 0 12px rgba(251, 191, 36, 0.4)",
-      };
-      styles[to] = {
-        background: "rgba(251, 191, 36, 0.45)",
-        boxShadow: "inset 0 0 20px rgba(251, 191, 36, 0.7)",
-      };
-    }
-
     if (lastAiMove && lastAiMove.length >= 4) {
       const from = lastAiMove.slice(0, 2) as Square;
       const to = lastAiMove.slice(2, 4) as Square;
@@ -104,6 +90,20 @@ export default function ChessBoard({
           boxShadow: "0 0 20px rgba(255, 61, 61, 0.6)"
         };
       }
+    }
+
+    // Suggested move from coach — amber/gold, applied last to take priority
+    if (suggestedMove && suggestedMove.length >= 4) {
+      const from = suggestedMove.slice(0, 2) as Square;
+      const to = suggestedMove.slice(2, 4) as Square;
+      styles[from] = {
+        background: "rgba(251, 191, 36, 0.2)",
+        boxShadow: "inset 0 0 12px rgba(251, 191, 36, 0.4)",
+      };
+      styles[to] = {
+        background: "rgba(251, 191, 36, 0.45)",
+        boxShadow: "inset 0 0 20px rgba(251, 191, 36, 0.7)",
+      };
     }
 
     // Selected square highlight
