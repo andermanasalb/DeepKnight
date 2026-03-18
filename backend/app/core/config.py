@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.0-flash"
     GEMINI_MAX_TOKENS: int = 900
-    COACH_MAX_CHARS: int = 800  # visible character budget communicated to the LLM
+    COACH_MAX_CHARS: int = 500  # visible character budget communicated to the LLM
 
     # ML / PyTorch
     MODEL_CHECKPOINT_PATH: str = "data/models/value_net.pt"
