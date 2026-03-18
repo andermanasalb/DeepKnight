@@ -141,12 +141,11 @@ class TestAlphaBeta:
 
     def test_finds_checkmate_in_one(self):
         """Engine should find a checkmate in one move."""
-        # Position with checkmate in one for White
-        # White queen on h5 can deliver checkmate on f7
-        board = chess.Board("rnb1kbnr/pppp1ppp/8/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 2 3")
+        # Scholar's Mate position after 1.e4 e5 2.Bc4 Nc6 3.Qh5 Nf6??
+        # Qxf7# is the only checkmate: king trapped by own pieces + queen covers d7/e7
+        board = chess.Board("r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4")
         engine = AlphaBetaEngine(depth=3)
         move, score = engine.search(board)
-        # Scholar's mate: Qxf7#
         assert move is not None
         board.push(move)
         assert board.is_checkmate(), f"Expected checkmate, engine played {move}"
