@@ -65,13 +65,13 @@ FEN: {fen}
 Moves: {history_text}
 Legal moves: {moves_text}
 
-Output schema (one complete sentence per field):
+Output schema — fill every field, MOVE first:
 
+MOVE: [Best move from the legal moves list — SAN notation only, e.g. "Nf3" or "exd5"]
 SITUATION: [Most important thing happening on the board right now]
 FOCUS: [Specific piece, square, or area that deserves immediate attention — and why]
-IDEA: [The type of plan or move concept to look for]
-DANGER: [Opponent's biggest threat right now, or "None" if there is none]
-MOVE: [Pick the single best move from the legal moves list above — write ONLY the SAN notation, nothing else]"""
+IDEA: [The plan or concept to look for]
+DANGER: [Opponent's biggest threat, or "None"]"""
 
 
 def explain_last_move_prompt(
